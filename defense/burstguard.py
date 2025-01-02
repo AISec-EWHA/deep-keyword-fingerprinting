@@ -1,9 +1,11 @@
 import os
+import sys
 import glob
 import random
 import logging
 import argparse
 from time import strftime
+from tqdm import tqdm
 from collections import defaultdict
 
 import numpy as np
@@ -19,9 +21,10 @@ from bisect import insort_left
 
 # input, output files
 parser = argparse.ArgumentParser(description='Process some folders and rule names.')
-parser.add_argument('--rule-name', type=str, default="break_burst", help='Name of the defense rule')
+parser.add_argument('--rule-name', type=str, default="sample", help='Name of the defense rule')
 parser.add_argument('--input-folder-root', type=str, default="/path/to/intput_folder", help='Root folder for input data')
 parser.add_argument('--output-folder-root', type=str, default="/path/to/output_folde", help='Root folder for output data')
+parser.add_argument('--log-path', type=str, default="/path/to/log_folder", help='Root folder for log data')
 args = parser.parse_args()
 
 DEFENSE_RULE_NAME = args.rule_name
@@ -30,9 +33,7 @@ OUTPUT_FOLDER_ROOT = args.output_folder_root
 OUTPUT_FOLDER = os.path.join(OUTPUT_FOLDER_ROOT, DEFENSE_RULE_NAME)
 
 # logging
-LOG_FILENAME = f"{DEFENSE_RULE_NAME}.txt"
-LOG_FOLDER_ROOT = "/path/to/log_folder"
-LOG_FOLDER = os.path.join(LOG_FOLDER_ROOT, LOG_FILENAME)
+LOG_PATH = args.log_path
 LOG_FORMAT = "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
 logger = logging.getLogger('wtfpad')
 
@@ -97,7 +98,7 @@ def file_read_write(input_file_path):
 
     trace = ps.parse(input_file_path)
 
-    simulated = burstguard(trace)
+    simulated = burstguard(trace) # IMPORTANT! Change rule to what you want to apply
 
     check_overheads(simulated, trace)
     ps.dump(simulated, output_file_dir)
@@ -126,10 +127,10 @@ def make_dir():
 
 # logging
 def set_log():
-    log_file = open(LOG_FOLDER, 'w')
-    ch = logging.StreamHandler(log_file)
-    ch.setFormatter(logging.Formatter(LOG_FORMAT))
-    logger.addHandler(ch)
+    # file handler
+    fh = logging.FileHandler(LOG_PATH, mode='w')
+    fh.setFormatter(logging.Formatter(LOG_FORMAT))
+    logger.addHandler(fh)
     logger.setLevel(logging.INFO)
 
 
