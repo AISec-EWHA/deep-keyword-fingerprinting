@@ -81,7 +81,7 @@ def save_to_pickle(data, filename):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process some folders and rule names.')
-    parser.add_argument('--input-folder', type=str, default="/scratch2/DKF/OurDefense_Datasets/break_incoming_burst_x4_0722_2226", help='Root folder for input features')
+    parser.add_argument('--input-folder', type=str, default="/path/to/input_folder", help='Root folder for input features')
     parser.add_argument('--x-path', type=str, default="/path/to/x_train.pkl", help='Path to the X features file')
     parser.add_argument('--y-path', type=str, default="/path/to/y_train.pkl", help='Path to the Y features file')
     args = parser.parse_args()
