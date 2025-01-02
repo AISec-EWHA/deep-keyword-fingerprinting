@@ -17,7 +17,7 @@ X_y = manager.list()
 
 
 # our feature: overlapping tam with size and sum concatenated
-def winlap(instance, max_matrix_len=1800, max_time=80):
+def winlap(instance, max_matrix_len=2000, max_time=80):
     times = []
     sizes = []
     for line in instance:

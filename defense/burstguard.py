@@ -83,6 +83,8 @@ def burstguard(trace):
     return simulated
 
 
+# IMPORTANT! Added your own rule
+
 def check_overheads(simulated, trace):
     bw_oh = bw.bandwidth_overhead(simulated, trace)
     bandwidths.append(bw_oh)
@@ -106,7 +108,7 @@ def file_read_write(input_file_path):
 
 def extract_in_files_parallel(input_dir=INPUT_FOLDER_ROOT):
     files = [file_path for class_num in range(258)
-             for file_path in glob.glob(os.path.join(input_dir, f'class_{class_num}', '*.txt'), recursive=True)]
+         for file_path in glob.glob(os.path.join(input_dir, f'class_{class_num}', f'*.txt'), recursive=True)]
     
     logger.info("Number of files: %s" % len(files))
     num_processes = multiprocessing.cpu_count()
@@ -127,10 +129,10 @@ def make_dir():
 
 # logging
 def set_log():
-    # file handler
-    fh = logging.FileHandler(LOG_PATH, mode='w')
-    fh.setFormatter(logging.Formatter(LOG_FORMAT))
-    logger.addHandler(fh)
+    log_file = open(LOG_PATH, 'w')
+    ch = logging.StreamHandler(log_file)
+    ch.setFormatter(logging.Formatter(LOG_FORMAT))
+    logger.addHandler(ch)
     logger.setLevel(logging.INFO)
 
 

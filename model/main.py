@@ -21,7 +21,6 @@ from dkf import DKFNet
 random.seed(0)
 
 # Dataset paths
-break_outgoing_burst_8_our_packet_random_iat_num_v3_0731_0409
 parser = argparse.ArgumentParser(description='Process some folders and rule names.')
 parser.add_argument('--rule-name', type=str, default="rule_name", help='Name of the defense rule')
 parser.add_argument('--gpu', type=str, default="5", help='Number of GPU')
