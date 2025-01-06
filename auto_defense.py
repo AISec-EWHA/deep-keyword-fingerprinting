@@ -16,6 +16,7 @@ import subprocess
 
 
 ################ Only change here ################
+MODEL_NAME = "kfp"          # IMPORTANT! pick one of: dkf, kfp, tiktok
 RULE_NAME = "burstguard"    # IMPORTANT! Change rule name
 CUDA_VISIBLE_DEVICES = "7"
 
@@ -30,23 +31,31 @@ OUTPUT_FOLDER_ROOT = "/scratch2/DKF/BurstGuard/defended"
 
 # input (defended traffic) output (feature pkl file)
 FEATURE_INPUT_FOLDER_ROOT = f"/scratch2/DKF/BurstGuard/defended/{DEFENSE_RULE_NAME}"
-X_FEATURE_PATH = f"/scratch2/DKF/BurstGuard/feature/ddg_defense_{DEFENSE_RULE_NAME}_y.pkl"
-Y_FEATURE_PATH = f"/scratch2/DKF/BurstGuard/feature/ddg_defense_{DEFENSE_RULE_NAME}_X.pkl"
+X_FEATURE_PATH = f"/scratch2/DKF/BurstGuard/feature/ddg_defense_{MODEL_NAME}_{DEFENSE_RULE_NAME}_x.pkl"
+Y_FEATURE_PATH = f"/scratch2/DKF/BurstGuard/feature/ddg_defense_{MODEL_NAME}_{DEFENSE_RULE_NAME}_y.pkl"
+PKL_FEATURE_PATH = f"/scratch2/DKF/BurstGuard/feature/ddg_defense_{MODEL_NAME}_{DEFENSE_RULE_NAME}.pkl"
 
 # model result
 CURRENT_DIR = os.path.dirname(__file__)
-MODEL_RESULT = os.path.join(CURRENT_DIR, 'results', f"{DEFENSE_RULE_NAME}.txt")
+MODEL_RESULT = os.path.join(CURRENT_DIR, 'results', f"ow_{MODEL_NAME}_{DEFENSE_RULE_NAME}.txt")
 
 if not os.path.exists(os.path.join(CURRENT_DIR, 'results')):
     os.makedirs(os.path.join(CURRENT_DIR, 'results'))
 
 # log path for defended traffic
-LOG_PATH = os.path.join(CURRENT_DIR, 'results', f"log_{DEFENSE_RULE_NAME}.txt")
+LOG_PATH = os.path.join(CURRENT_DIR, 'results', f"log_{MODEL_NAME}_{DEFENSE_RULE_NAME}.txt")
 
 # script path
 DEFENSE_SCIPT = os.path.join(CURRENT_DIR, 'defense', 'burstguard.py')
-FEATURE_SCIPT = os.path.join(CURRENT_DIR, 'feature', 'winlap.py')
-MODEL_SCIPT = os.path.join(CURRENT_DIR, 'model', 'main.py')
+
+if MODEL_NAME=="dkf":
+    FEATURE_SCIPT = os.path.join(CURRENT_DIR, 'feature', 'winlap.py')
+    MODEL_SCIPT = os.path.join(CURRENT_DIR, 'model', 'main.py')
+elif MODEL_NAME=="kfp":
+    FEATURE_SCIPT = os.path.join(CURRENT_DIR, 'feature', 'RF.py')
+    MODEL_SCIPT = os.path.join(CURRENT_DIR, 'model', 'k-FP.py')
+elif MODEL_NAME=="tiktok":
+    pass
 
 
 def run_script(script_path, *args):
@@ -68,11 +77,20 @@ def run_script(script_path, *args):
 
 def main():
     # if you want to run only some script, remove some scripts from the dictionary
-    scripts = [
-        (DEFENSE_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --input-folder-root={INPUT_FOLDER_ROOT} --output-folder-root={OUTPUT_FOLDER_ROOT} --log-path={LOG_PATH}"),
-        (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH}"),
-        (MODEL_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --gpu={CUDA_VISIBLE_DEVICES} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --model-result={MODEL_RESULT}")
-    ]
+    if MODEL_NAME=="dkf":
+        scripts = [
+            (DEFENSE_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --input-folder-root={INPUT_FOLDER_ROOT} --output-folder-root={OUTPUT_FOLDER_ROOT} --log-path={LOG_PATH}"),
+            (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH}"),
+            (MODEL_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --gpu={CUDA_VISIBLE_DEVICES} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --model-result={MODEL_RESULT}")
+        ]
+    elif MODEL_NAME=="kfp":
+            scripts = [
+            (DEFENSE_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --input-folder-root={INPUT_FOLDER_ROOT} --output-folder-root={OUTPUT_FOLDER_ROOT} --log-path={LOG_PATH}"),
+            (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --pkl-path={PKL_FEATURE_PATH}"),
+            (MODEL_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --pkl-path={PKL_FEATURE_PATH} --model-result={MODEL_RESULT}")
+        ]
+    elif MODEL_NAME=="tiktok":
+        pass
 
     for script, args in scripts:
         run_script(script, *args.split())
