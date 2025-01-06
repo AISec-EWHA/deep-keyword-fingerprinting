@@ -16,7 +16,7 @@ import subprocess
 
 
 ################ Only change here ################
-MODEL_NAME = "kfp"          # IMPORTANT! pick one of: dkf, kfp, tiktok
+MODEL_NAME = "tiktok"          # IMPORTANT! pick one of: dkf, kfp, tiktok
 RULE_NAME = "burstguard"    # IMPORTANT! Change rule name
 CUDA_VISIBLE_DEVICES = "7"
 
@@ -55,7 +55,8 @@ elif MODEL_NAME=="kfp":
     FEATURE_SCIPT = os.path.join(CURRENT_DIR, 'feature', 'RF.py')
     MODEL_SCIPT = os.path.join(CURRENT_DIR, 'model', 'k-FP.py')
 elif MODEL_NAME=="tiktok":
-    pass
+    FEATURE_SCIPT = os.path.join(CURRENT_DIR, 'feature', 'Tik-Tok.py')
+    MODEL_SCIPT = os.path.join(CURRENT_DIR, 'model', 'main.py')
 
 
 def run_script(script_path, *args):
@@ -81,7 +82,7 @@ def main():
         scripts = [
             (DEFENSE_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --input-folder-root={INPUT_FOLDER_ROOT} --output-folder-root={OUTPUT_FOLDER_ROOT} --log-path={LOG_PATH}"),
             (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH}"),
-            (MODEL_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --gpu={CUDA_VISIBLE_DEVICES} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --model-result={MODEL_RESULT}")
+            (MODEL_SCIPT, f"--model-name={MODEL_NAME} --rule-name={DEFENSE_RULE_NAME} --gpu={CUDA_VISIBLE_DEVICES} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --model-result={MODEL_RESULT}")
         ]
     elif MODEL_NAME=="kfp":
             scripts = [
@@ -90,7 +91,11 @@ def main():
             (MODEL_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --pkl-path={PKL_FEATURE_PATH} --model-result={MODEL_RESULT}")
         ]
     elif MODEL_NAME=="tiktok":
-        pass
+        scripts = [
+            (DEFENSE_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --input-folder-root={INPUT_FOLDER_ROOT} --output-folder-root={OUTPUT_FOLDER_ROOT} --log-path={LOG_PATH}"),
+            (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH}"),
+            (MODEL_SCIPT, f"--model-name={MODEL_NAME} --rule-name={DEFENSE_RULE_NAME} --gpu={CUDA_VISIBLE_DEVICES} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --model-result={MODEL_RESULT}")
+        ]
 
     for script, args in scripts:
         run_script(script, *args.split())

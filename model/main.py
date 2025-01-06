@@ -14,14 +14,16 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 from sklearn.model_selection import train_test_split
 import datetime
 
-# DKFNet model
-from dkf import DKFNet
+# models
+from DKF import DKFNet
+from DF import DFNet
 
 # Set random seed for reproducibility
 random.seed(0)
 
 # Dataset paths
 parser = argparse.ArgumentParser(description='Process some folders and rule names.')
+parser.add_argument('--model-name', type=str, default="dkf", help='Name of the model to use')
 parser.add_argument('--rule-name', type=str, default="rule_name", help='Name of the defense rule')
 parser.add_argument('--gpu', type=str, default="5", help='Number of GPU')
 parser.add_argument('--x-path', type=str, default="/path/to/x_train.pkl", help='Path to the X features file')
@@ -33,6 +35,7 @@ defense_rule_name = args.rule_name
 X_path = args.x_path
 y_path = args.y_path
 model_result = args.model_result
+model_name = args.model_name
 
 # GPU setup (optional)
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
@@ -41,8 +44,13 @@ os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
 NB_EPOCH = 30
 BATCH_SIZE = 32
 VERBOSE = 2
-LENGTH = 8000
-NB_CLASSES = 258
+
+if model_name=="dkf":
+    LENGTH = 8000
+elif model_name=="tiktok":
+    LENGTH = 5000
+
+NB_CLASSES = 2
 INPUT_SHAPE = (LENGTH, 1)
 OPTIMIZER = Adamax(learning_rate=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
@@ -103,7 +111,13 @@ y_valid = to_categorical(y_valid, NB_CLASSES)
 y_test = to_categorical(y_test, NB_CLASSES)
 
 # Model building
-model = DKFNet.build(input_shape=INPUT_SHAPE, classes=NB_CLASSES)
+if model_name=="dkf":
+    print("Running DKF model...")
+    model = DKFNet.build(input_shape=INPUT_SHAPE, classes=NB_CLASSES)
+elif model_name=="tiktok":
+    print("Running DF model...")
+    model = DFNet.build(input_shape=INPUT_SHAPE, classes=NB_CLASSES)
+
 model.compile(loss="categorical_crossentropy", optimizer=OPTIMIZER, metrics=["accuracy"])
 
 # Start training
