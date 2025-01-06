@@ -84,7 +84,7 @@ def burstguard(trace):
 
 
 # IMPORTANT! Added your own rule
-def burstguard_(trace):
+
 
 def check_overheads(simulated, trace):
     bw_oh = bw.bandwidth_overhead(simulated, trace)
