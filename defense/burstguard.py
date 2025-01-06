@@ -84,6 +84,7 @@ def burstguard(trace):
 
 
 # IMPORTANT! Added your own rule
+def burstguard_(trace):
 
 def check_overheads(simulated, trace):
     bw_oh = bw.bandwidth_overhead(simulated, trace)
@@ -107,7 +108,7 @@ def file_read_write(input_file_path):
 
 
 def extract_in_files_parallel(input_dir=INPUT_FOLDER_ROOT):
-    files = [file_path for class_num in range(2)
+    files = [file_path for class_num in range(258)
          for file_path in glob.glob(os.path.join(input_dir, f'class_{class_num}', f'*.txt'), recursive=True)]
     
     logger.info("Number of files: %s" % len(files))

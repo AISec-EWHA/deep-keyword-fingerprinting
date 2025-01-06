@@ -50,7 +50,7 @@ if model_name=="dkf":
 elif model_name=="tiktok":
     LENGTH = 5000
 
-NB_CLASSES = 2
+NB_CLASSES = 258
 INPUT_SHAPE = (LENGTH, 1)
 OPTIMIZER = Adamax(learning_rate=0.002, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
