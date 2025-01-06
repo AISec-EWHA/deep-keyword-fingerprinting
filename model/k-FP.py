@@ -96,7 +96,7 @@ def RF_closedworld(defense_rule_name, model_result, path_to_dict, n_jobs = n_job
     te_data, te_label1 = zip(*test)
     te_label = list(zip(*te_label1))[0]
 
-    print("Training...")
+    print("Running k-FP model...")
 
     model = RandomForestClassifier(n_jobs=n_jobs, n_estimators=num_Trees, oob_score=True, verbose=1)    # CHANGE: added verbose
     model.fit(tr_data, tr_label)

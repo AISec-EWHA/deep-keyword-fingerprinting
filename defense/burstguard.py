@@ -107,7 +107,7 @@ def file_read_write(input_file_path):
 
 
 def extract_in_files_parallel(input_dir=INPUT_FOLDER_ROOT):
-    files = [file_path for class_num in range(258)
+    files = [file_path for class_num in range(2)
          for file_path in glob.glob(os.path.join(input_dir, f'class_{class_num}', f'*.txt'), recursive=True)]
     
     logger.info("Number of files: %s" % len(files))
