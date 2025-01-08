@@ -11,9 +11,26 @@ import parmap
 import multiprocessing
 from multiprocessing import Manager
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from logger_config import *
+
+
+parser = argparse.ArgumentParser(description='Process some folders and rule names.')
+parser.add_argument('--input-folder', type=str, default="/path/to/input_folder", help='Root folder for input features')
+parser.add_argument('--x-path', type=str, default="/path/to/x_train.pkl", help='Path to the X features file')
+parser.add_argument('--y-path', type=str, default="/path/to/y_train.pkl", help='Path to the Y features file')
+parser.add_argument('--log-path', type=str, default="/path/to/log_folder", help='Root folder for log data')
+args = parser.parse_args()
+
+input_folder = args.input_folder
+X_path = args.x_path
+y_path = args.y_path
 
 manager = Manager()
 X_y = manager.list()
+
+logger = setup_logger(args.log_path)
 
 
 # our feature: overlapping tam with size and sum concatenated
@@ -39,13 +56,13 @@ def process_file(file, X_y):
 
 def extract_features(input_folder, feature_func):
     files = natsorted(glob.glob(os.path.join(input_folder, '*.txt')))
-    print(len(files))
+    logger.info(f"Number of files: {len(files)}")
     
     num_processes = multiprocessing.cpu_count()
     with multiprocessing.Pool(num_processes) as pool:
         parmap.map(process_file, files, X_y, pm_pbar=True, pm_processes=num_processes)
 
-    print("Saving to X and y...")
+    logger.info("Saving to X and y...")
     X_y_array = np.array(X_y)
     X = X_y_array[:, :-1]
     y = X_y_array[:, -1].reshape(-1, 1)
@@ -54,23 +71,13 @@ def extract_features(input_folder, feature_func):
 
 
 def save_to_pickle(data, filename):
-    print("Saving to pickle...")
+    logger.info("Saving to pickle...")
     with open(filename, 'wb') as f:
         pickle.dump(data, f)
-    print(f"Features saved to {filename}")
+    logger.info(f"Features saved to {filename}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Process some folders and rule names.')
-    parser.add_argument('--input-folder', type=str, default="/path/to/input_folder", help='Root folder for input features')
-    parser.add_argument('--x-path', type=str, default="/path/to/x_train.pkl", help='Path to the X features file')
-    parser.add_argument('--y-path', type=str, default="/path/to/y_train.pkl", help='Path to the Y features file')
-    args = parser.parse_args()
-
-    input_folder = args.input_folder
-    X_path = args.x_path
-    y_path = args.y_path
-    
     X, y = extract_features(input_folder, lambda instance: tiktok(instance))
 
     save_to_pickle(y, y_path)

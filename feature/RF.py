@@ -13,6 +13,25 @@ from tqdm import tqdm
 
 import numpy as np
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from logger_config import *
+
+
+parser = argparse.ArgumentParser(description='Process some folders and rule names.')
+parser.add_argument('--input-folder', type=str, default="/path/to/input_folder", help='Root folder for input features')
+parser.add_argument('--pkl-path', type=str, default="/path/to/train.pkl", help='Path to the X & Y features file')
+parser.add_argument('--log-path', type=str, default="/path/to/log_folder", help='Root folder for log data')
+args = parser.parse_args()
+
+path_to_alexa = args.input_folder    # path to extract
+path_to_dict = args.pkl_path         # path to save 
+
+alexa_sites = 258
+alexa_instances = 1000
+
+logger = setup_logger(args.log_path)
+
 
 """Feeder functions"""
 def neighborhood(iterable):
@@ -61,7 +80,7 @@ def get_pkt_list(trace_data, filename=None):
                 dta.append(((float(b[0]) - first_time), -1))
         return dta
     except Exception as e:
-        print(f"Error in file {filename}: {e}")
+        logger.error(f"Error in file {filename}: {e}")
         return []
 
 
@@ -115,7 +134,7 @@ def interarrival_maxminmeansd_stats(list_data):
     
     except Exception as e:
         filename = os.path.abspath(inspect.getfile(inspect.currentframe()))
-        print(f"Error: {e}, Error in file: {filename}")
+        logger.error(f"Error: {e}, Error in file: {filename}")
 
     return interstats
 
@@ -307,7 +326,7 @@ def TOTAL_FEATURES(trace_data, max_size=175):
         features = ALL_FEATURES[:max_size]
 
     except Exception as e:
-        print(f"Error in TOTAL_FEATURES: {e}")
+        logger.error(f"Error in TOTAL_FEATURES: {e}")
         features = tuple([0] * max_size)
 
     return features
@@ -321,7 +340,7 @@ def mon_dict(path_to_dict, path_to_alexa, alexa_sites, alexa_instances):
                  'alexa_label': []
                  }
                  
-    print("Creating mon features...")
+    logger.info("Creating mon features...")
 
     # CHANGE: changed the format into defense dataset format
     for i in tqdm(range(alexa_sites)):
@@ -340,16 +359,5 @@ def mon_dict(path_to_dict, path_to_alexa, alexa_sites, alexa_instances):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Process some folders and rule names.')
-    parser.add_argument('--input-folder', type=str, default="/path/to/input_folder", help='Root folder for input features')
-    parser.add_argument('--pkl-path', type=str, default="/path/to/train.pkl", help='Path to the X & Y features file')
-    args = parser.parse_args()
-
-    path_to_alexa = args.input_folder    # path to extract
-    path_to_dict = args.pkl_path         # path to save 
-
-    alexa_sites = 258
-    alexa_instances = 1000
-
     mon_dict(path_to_dict=path_to_dict, path_to_alexa=path_to_alexa, 
                 alexa_sites=alexa_sites, alexa_instances=alexa_instances)

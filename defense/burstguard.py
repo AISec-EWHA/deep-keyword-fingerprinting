@@ -19,6 +19,10 @@ from histograms import Histogram, Histogram_0
 
 from bisect import insort_left
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from logger_config import *
+
 # input, output files
 parser = argparse.ArgumentParser(description='Process some folders and rule names.')
 parser.add_argument('--rule-name', type=str, default="sample", help='Name of the defense rule')
@@ -33,9 +37,7 @@ OUTPUT_FOLDER_ROOT = args.output_folder_root
 OUTPUT_FOLDER = os.path.join(OUTPUT_FOLDER_ROOT, DEFENSE_RULE_NAME)
 
 # logging
-LOG_PATH = args.log_path
-LOG_FORMAT = "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
-logger = logging.getLogger('wtfpad')
+logger = setup_logger(args.log_path)
 
 NONE    = 0x00
 BURST   = 0x01
@@ -84,6 +86,54 @@ def burstguard(trace):
 
 
 # IMPORTANT! Added your own rule
+def burstguard_window_mean(trace):
+    simulated = []
+    state = NONE
+    
+    # Create an instance of Histogram
+    histo = Histogram()
+
+    iat_buffer = [] # ADD
+
+    for index, packet in enumerate(trace):
+        simulated.append(packet)
+
+
+        # ADDstart: iat buffer & window mean
+        if index > 0:
+            prev_packet = trace[index - 1]
+            curr_packet = trace[index]
+            if curr_packet.direction == prev_packet.direction:
+                iat_buffer.append(curr_packet.timestamp - prev_packet.timestamp)
+        
+        if len(iat_buffer) == 5:
+            avg_iat = sum(iat_buffer) / len(iat_buffer)
+            histo.update_iat_window_distribution(avg_iat)
+            iat_buffer.clear()
+        # ADDend
+
+
+        if index >= 1 and state == NONE and trace[index].direction == 1 and trace[index - 1].direction == 1:
+            # Create dummy packets using the sampled iat
+            num_dummy_packets = random.randint(1, 8)
+            former_timestamp = packet.timestamp
+            for _ in range(num_dummy_packets):
+                dummmy_timestamp = former_timestamp + histo.random_iat_from_distribution(percentile=20)
+                dummy_packet = ps.Packet( 
+                    timestamp=dummmy_timestamp,
+                    direction=-packet.direction,
+                    length=PADDING_LENGTH_OUR,  # Set PADDING_LENGTH if needed
+                    dummy=True
+                )
+                insort_left(simulated, dummy_packet)
+                former_timestamp = dummmy_timestamp
+            state = BURST
+
+        if state == BURST and trace[index].direction == -trace[index - 1].direction:
+            state = NONE
+    
+    simulated.sort(key=lambda x: x.timestamp)
+    return simulated
 
 
 def check_overheads(simulated, trace):
@@ -101,7 +151,7 @@ def file_read_write(input_file_path):
 
     trace = ps.parse(input_file_path)
 
-    simulated = burstguard(trace) # IMPORTANT! Change rule to what you want to apply
+    simulated = burstguard_window_mean(trace) # IMPORTANT! Change rule to what you want to apply
 
     check_overheads(simulated, trace)
     ps.dump(simulated, output_file_dir)
@@ -128,16 +178,6 @@ def make_dir():
         os.mkdir(OUTPUT_FOLDER)
 
 
-# logging
-def set_log():
-    log_file = open(LOG_PATH, 'w')
-    ch = logging.StreamHandler(log_file)
-    ch.setFormatter(logging.Formatter(LOG_FORMAT))
-    logger.addHandler(ch)
-    logger.setLevel(logging.INFO)
-
-
 if __name__ == "__main__":
     make_dir()
-    set_log()
     extract_in_files_parallel()

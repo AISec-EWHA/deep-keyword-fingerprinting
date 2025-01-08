@@ -18,6 +18,10 @@ import datetime
 from DKF import DKFNet
 from DF import DFNet
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from logger_config import *
+
 # Set random seed for reproducibility
 random.seed(0)
 
@@ -28,6 +32,7 @@ parser.add_argument('--rule-name', type=str, default="rule_name", help='Name of 
 parser.add_argument('--gpu', type=str, default="5", help='Number of GPU')
 parser.add_argument('--x-path', type=str, default="/path/to/x_train.pkl", help='Path to the X features file')
 parser.add_argument('--y-path', type=str, default="/path/to/y_train.pkl", help='Path to the Y features file')
+parser.add_argument('--log-path', type=str, default="/path/to/log_folder", help='Root folder for log data')
 parser.add_argument('--model-result', type=str, default="/path/to/result.txt", help='Path to the model accuracy log')
 args = parser.parse_args()
 
@@ -36,6 +41,9 @@ X_path = args.x_path
 y_path = args.y_path
 model_result = args.model_result
 model_name = args.model_name
+
+logger = setup_logger(args.log_path)
+epoch_logger = EpochLogger(logger)
 
 # GPU setup (optional)
 os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
@@ -123,24 +131,16 @@ model.compile(loss="categorical_crossentropy", optimizer=OPTIMIZER, metrics=["ac
 # Start training
 history = model.fit(X_train, y_train,
                 batch_size=BATCH_SIZE, epochs=NB_EPOCH,
-                verbose=VERBOSE, validation_data=(X_valid, y_valid))
+                verbose=VERBOSE, validation_data=(X_valid, y_valid),
+                callbacks=[epoch_logger])
 
 # Model evaluation
 score_test = model.evaluate(X_test, y_test, verbose=VERBOSE)
 score_train = model.evaluate(X_train, y_train, verbose=VERBOSE)
 
-print("\nEpoch: ", NB_EPOCH, ", Batch: ", BATCH_SIZE, ", feature: ", defense_rule_name)
-print(model.metrics_names)
-print("\n=> Train score:", score_train[0])
-print("=> Train accuracy:", score_train[1])
-print("\n=> Test score:", score_test[0])
-print("=> Test accuracy:", score_test[1])
-
-# Save results to a file
-with open(model_result, 'w') as file:
-    file.write(f"\nEpoch: {NB_EPOCH}, Batch: {BATCH_SIZE}, feature: {defense_rule_name}")
-    file.write("\n" + ", ".join(model.metrics_names))
-    file.write(f"\n=> Train score: {score_train[0]}")
-    file.write(f"=> Train accuracy: {score_train[1]}")
-    file.write(f"\n=> Test score: {score_test[0]}")
-    file.write(f"=> Test accuracy: {score_test[1]}")
+logger.info(f"\nEpoch: {NB_EPOCH}, Batch: {BATCH_SIZE}, Feature: {defense_rule_name}")
+logger.info(f"Metrics Names: {model.metrics_names}")
+logger.info(f"=> Train Score: {score_train[0]:.4f}")
+logger.info(f"=> Train Accuracy: {score_train[1]:.4f}")
+logger.info(f"=> Test Score: {score_test[0]:.4f}")
+logger.info(f"=> Test Accuracy: {score_test[1]:.4f}")

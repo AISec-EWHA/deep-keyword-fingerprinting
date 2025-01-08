@@ -38,6 +38,11 @@ class Histogram:
             if curr_packet.direction == prev_packet.direction:
                 iat = curr_packet.timestamp - prev_packet.timestamp
                 self.iat_distribution[iat] += 1
+    
+    # ADD: window update
+    def update_iat_window_distribution(self, iat):
+        """Update the iat distribution with the latest inter-arrival time."""
+        self.iat_distribution[iat] += 1
 
     def reset_distribution(self):
         """Reset the iat distribution."""

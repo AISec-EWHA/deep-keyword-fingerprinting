@@ -15,8 +15,23 @@ from sklearn import metrics
 from sklearn import tree
 import sklearn.metrics as skm
 
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from logger_config import *
+
 # re-seed the generator
 #np.random.seed(1234)
+
+parser = argparse.ArgumentParser(description='k-FP benchmarks')
+parser.add_argument('--rule-name', type=str, default="rule_name", help='Name of the defense rule')
+parser.add_argument('--pkl-path', type=str, default="/path/to/train.pkl", help='Path to the X & Y features file')
+parser.add_argument('--model-result', type=str, default="/path/to/result.txt", help='Path to the model accuracy log')
+parser.add_argument('--log-path', type=str, default="/path/to/log_folder", help='Root folder for log data')
+args = parser.parse_args()
+
+defense_rule_name = args.rule_name
+model_result = args.model_result
+path_to_dict = args.pkl_path
 
 ### Parameters ###
 # Number of sites, number of instances per site, number of (alexa/hs) monitored training instances per site, Number of trees for RF etc.
@@ -30,6 +45,7 @@ mon_train_inst = alexa_train_inst
 mon_test_inst = alexa_instances - mon_train_inst
 n_jobs = 128
 
+logger = setup_logger(args.log_path)
 
 ############ Feeder functions ############
 def chunks(l, n):
@@ -96,36 +112,18 @@ def RF_closedworld(defense_rule_name, model_result, path_to_dict, n_jobs = n_job
     te_data, te_label1 = zip(*test)
     te_label = list(zip(*te_label1))[0]
 
-    print("Running k-FP model...")
+    logger.info("Running k-FP model...")
 
     model = RandomForestClassifier(n_jobs=n_jobs, n_estimators=num_Trees, oob_score=True, verbose=1)    # CHANGE: added verbose
     model.fit(tr_data, tr_label)
     
-    print("RF accuracy = ", model.score(te_data, te_label))
-    print("Feature importance scores:", model.feature_importances_)
+    logger.info(f"RF accuracy = {model.score(te_data, te_label):.4f}")
+    logger.info(f"Feature importance scores: {model.feature_importances_}")
 
     scores = cross_val_score(model, np.array(tr_data), np.array(tr_label))
-    print("cross_val_score = ", scores.mean())
-    print("OOB score = ", model.oob_score_)
-
-    # Save results to a file
-    with open(model_result, 'w') as file:
-        file.write(f"\nfeature: {defense_rule_name}")
-        file.write(f"\nRF accuracy = {model.score(te_data, te_label)}")
-        file.write(f"\nFeature importance scores: {model.feature_importances_}")
-        file.write(f"\ncross_val_score = {scores.mean()}")
-        file.write(f"\nOOB score = {model.oob_score_}")
+    logger.info(f"cross_val_score = {scores.mean():.4f}")
+    logger.info(f"OOB score = {model.oob_score_:.4f}")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='k-FP benchmarks')
-    parser.add_argument('--rule-name', type=str, default="rule_name", help='Name of the defense rule')
-    parser.add_argument('--pkl-path', type=str, default="/path/to/train.pkl", help='Path to the X & Y features file')
-    parser.add_argument('--model-result', type=str, default="/path/to/result.txt", help='Path to the model accuracy log')
-    args = parser.parse_args()
-
-    defense_rule_name = args.rule_name
-    model_result = args.model_result
-    path_to_dict = args.pkl_path
-
     RF_closedworld(defense_rule_name, model_result, path_to_dict)

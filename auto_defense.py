@@ -4,6 +4,7 @@ import time
 from time import strftime
 import logging
 import subprocess
+from logger_config import setup_logger
 
 # NOTE:
 # 1. auto_defense.py 파일에서, RULE_NAME (원하는 대로)과 CUDA_VISIBLE_DEVICES를 변경해주세요.
@@ -16,9 +17,9 @@ import subprocess
 
 
 ################ Only change here ################
-MODEL_NAME = "tiktok"          # IMPORTANT! pick one of: dkf, kfp, tiktok
-RULE_NAME = "burstguard"    # IMPORTANT! Change rule name
-CUDA_VISIBLE_DEVICES = "7"
+MODEL_NAME = "kfp"          # IMPORTANT! pick one of: dkf, kfp, tiktok
+RULE_NAME = "burstguard_window_mean"    # IMPORTANT! Change rule name
+CUDA_VISIBLE_DEVICES = "6"
 
 
 ######### Don't have to change from here #########
@@ -44,6 +45,7 @@ if not os.path.exists(os.path.join(CURRENT_DIR, 'results')):
 
 # log path for defended traffic
 LOG_PATH = os.path.join(CURRENT_DIR, 'results', f"log_{MODEL_NAME}_{DEFENSE_RULE_NAME}.txt")
+logger = setup_logger(LOG_PATH)
 
 # script path
 DEFENSE_SCIPT = os.path.join(CURRENT_DIR, 'defense', 'burstguard.py')
@@ -61,40 +63,42 @@ elif MODEL_NAME=="tiktok":
 
 def run_script(script_path, *args):
     cmd = [sys.executable, script_path] + list(args)
-    logging.info(f"Running command: {' '.join(cmd)}")
+    logger.info(f"Running command: {' '.join(cmd)}")
 
     try:
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-        logging.info(f"Script output:\n{result.stdout}")
+        logger.info(f"Script output:\n{result.stdout}")
 
         if result.stderr:
-            logging.error(f"Script error output:\n{result.stderr}")
+            logger.info(f"Script output:\n{result.stderr}")
 
     except subprocess.CalledProcessError as e:
-        logging.error(f"Script failed with exit code {e.returncode}")
-        logging.error(f"Script error output:\n{e.stderr}")
+        logger.error(f"Script failed with exit code {e.returncode}")
+        logger.error(f"Script error output:\n{e.stderr}")
         sys.exit(e.returncode)
 
 
 def main():
+    logger = setup_logger(LOG_PATH)
+
     # if you want to run only some script, remove some scripts from the dictionary
     if MODEL_NAME=="dkf":
         scripts = [
             (DEFENSE_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --input-folder-root={INPUT_FOLDER_ROOT} --output-folder-root={OUTPUT_FOLDER_ROOT} --log-path={LOG_PATH}"),
-            (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH}"),
-            (MODEL_SCIPT, f"--model-name={MODEL_NAME} --rule-name={DEFENSE_RULE_NAME} --gpu={CUDA_VISIBLE_DEVICES} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --model-result={MODEL_RESULT}")
+            (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --log-path={LOG_PATH}"),
+            (MODEL_SCIPT, f"--model-name={MODEL_NAME} --rule-name={DEFENSE_RULE_NAME} --gpu={CUDA_VISIBLE_DEVICES} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --model-result={MODEL_RESULT} --log-path={LOG_PATH}")
         ]
     elif MODEL_NAME=="kfp":
             scripts = [
             (DEFENSE_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --input-folder-root={INPUT_FOLDER_ROOT} --output-folder-root={OUTPUT_FOLDER_ROOT} --log-path={LOG_PATH}"),
-            (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --pkl-path={PKL_FEATURE_PATH}"),
-            (MODEL_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --pkl-path={PKL_FEATURE_PATH} --model-result={MODEL_RESULT}")
+            (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --pkl-path={PKL_FEATURE_PATH} --log-path={LOG_PATH}"),
+            (MODEL_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --pkl-path={PKL_FEATURE_PATH} --model-result={MODEL_RESULT} --log-path={LOG_PATH}")
         ]
     elif MODEL_NAME=="tiktok":
         scripts = [
             (DEFENSE_SCIPT, f"--rule-name={DEFENSE_RULE_NAME} --input-folder-root={INPUT_FOLDER_ROOT} --output-folder-root={OUTPUT_FOLDER_ROOT} --log-path={LOG_PATH}"),
-            (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH}"),
-            (MODEL_SCIPT, f"--model-name={MODEL_NAME} --rule-name={DEFENSE_RULE_NAME} --gpu={CUDA_VISIBLE_DEVICES} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --model-result={MODEL_RESULT}")
+            (FEATURE_SCIPT, f"--input-folder={FEATURE_INPUT_FOLDER_ROOT} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --log-path={LOG_PATH}"),
+            (MODEL_SCIPT, f"--model-name={MODEL_NAME} --rule-name={DEFENSE_RULE_NAME} --gpu={CUDA_VISIBLE_DEVICES} --x-path={X_FEATURE_PATH} --y-path={Y_FEATURE_PATH} --model-result={MODEL_RESULT} --log-path={LOG_PATH}")
         ]
 
     for script, args in scripts:
