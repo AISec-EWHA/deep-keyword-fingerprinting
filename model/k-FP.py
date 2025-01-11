@@ -91,9 +91,6 @@ def mon_train_test_references(path_to_dict):
     for te in test_data:
         flat_test_data.append(list(sum(te, [])))
 
-    training_label = [(0, t[1]) for t in training_label]
-    test_label = [(0, t[1]) for t in test_label]
-
     # CHANGE: covert zip to list
     training_features =  list(zip(flat_train_data, training_label))
     test_features =  list(zip(flat_test_data, test_label))
