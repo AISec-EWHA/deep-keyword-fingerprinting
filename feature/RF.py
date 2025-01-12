@@ -12,6 +12,7 @@ import argparse
 from tqdm import tqdm
 
 import numpy as np
+from multiprocessing import Pool, cpu_count
 
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -333,7 +334,46 @@ def TOTAL_FEATURES(trace_data, max_size=175):
 
 
 ############ Non-Feeder functions ########
+def process_site(args):
+    i, path_to_alexa = args
+    data_dict = {'alexa_feature': [], 'alexa_label': []}
+    files = glob.glob(os.path.join(path_to_alexa, f"{i}_*.txt"))
+    
+    for j, file_path in enumerate(files):
+        tcp_dump = open(file_path).readlines()
+        g = []
+        g.append(TOTAL_FEATURES(tcp_dump))
+        data_dict['alexa_feature'].append(g)
+        data_dict['alexa_label'].append((i, j))
+    return data_dict
+
+
+def merge_dicts(dicts):
+    merged = {'alexa_feature': [], 'alexa_label': []}
+    for d in dicts:
+        merged['alexa_feature'].extend(d['alexa_feature'])
+        merged['alexa_label'].extend(d['alexa_label'])
+    return merged
+
+
 # path to save, path to extract, number of classes, number of instances 
+def mon_dict(path_to_dict, path_to_alexa, alexa_sites, alexa_instances):
+    logger.info("Creating mon features with multiprocessing...")
+    num_processes = min(cpu_count(), alexa_sites)
+    
+    with Pool(num_processes) as pool:
+        site_args = [(i, path_to_alexa) for i in range(alexa_sites)]
+        results = list(tqdm(pool.imap(process_site, site_args), total=alexa_sites))
+
+    data_dict = merge_dicts(results)
+    
+    assert len(data_dict['alexa_feature']) == len(data_dict['alexa_label'])
+    fileObject = open(path_to_dict, 'wb')
+    dill.dump(data_dict, fileObject)
+    fileObject.close()
+
+
+"""
 def mon_dict(path_to_dict, path_to_alexa, alexa_sites, alexa_instances):
     '''Extract Features -- A dictionary containing features for each traffic instance.'''
     data_dict = {'alexa_feature': [],
@@ -356,6 +396,7 @@ def mon_dict(path_to_dict, path_to_alexa, alexa_sites, alexa_instances):
     fileObject = open(path_to_dict, 'wb')
     dill.dump(data_dict, fileObject)
     fileObject.close()
+"""
 
 
 if __name__ == '__main__':
