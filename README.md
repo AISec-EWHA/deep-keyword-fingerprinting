@@ -29,7 +29,13 @@ natsort==8.4.0
 ```
 
 ## 3. Dataset
-If you need access to the dataset, please contact the below contact points.
+
+For the datasets, you can use the download link below:
+
+| Dataset | Link |
+|-----|-----|
+| Bing_2023 | [Link](https://drive.google.com/file/d/1jdk2rk9Wf8pkDa3JGj5JjXl6XQOqZWKl/view?usp=share_link) |
+| DuckDuckGo_2023 | [Link](https://drive.google.com/file/d/1jdk2rk9Wf8pkDa3JGj5JjXl6XQOqZWKl/view?usp=share_link) |
 
 
 ## 3. Run DKF and BurstGuard
