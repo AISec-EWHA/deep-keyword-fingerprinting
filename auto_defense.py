@@ -9,7 +9,7 @@ from logger_config import setup_logger
 
 ################ Only change here ################
 MODEL_NAME = "dkf"          # IMPORTANT! pick one of: dkf, kfp, tiktok
-RULE_NAME = "burstguard_window_mean"    # IMPORTANT! Change rule name (to anything you want)
+RULE_NAME = "burstguard"    # IMPORTANT! Change rule name (to anything you want)
 CUDA_VISIBLE_DEVICES = "0"
 
 
