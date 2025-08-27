@@ -6,19 +6,10 @@ import logging
 import subprocess
 from logger_config import setup_logger
 
-# NOTE:
-# 1. auto_defense.py 파일에서, RULE_NAME (원하는 대로)과 CUDA_VISIBLE_DEVICES를 변경해주세요.
-# 2. /defense/burstguard.py 파일에서, 새로운 defense 룰을 새로운 함수로 만들어주세요. 이 함수는 Packet 객체들의 리스트 (즉, 하나의 trace)를 input으로 받습니다.
-#   * Packet 객체는 timestamp, direction, length, dummy를 속성으로 가지고 있습니다.
-# 3. 위에서 추가한 새로운 함수를 적용하기 위해서 file_read_write 함수에서, simulated = 새로운함수이름(trace) 로 변경해주세요.
-# 4. 그 후 python3 auto_defense.py 명령어를 입력하면, `defense 적용 -> defended traffic에서 winlap feature 추출 -> 해당 feature로 DKF 모델 결과 얻기`가 전부 run 됩니다.
-
-# * defended traffic 및 feature는 /scratch2/DKF/BurstGuard 경로에, bandwidth overhead 및 모델 정확도 로그는 /results 경로에 저장됩니다.
-
 
 ################ Only change here ################
 MODEL_NAME = "kfp"          # IMPORTANT! pick one of: dkf, kfp, tiktok
-RULE_NAME = "burstguard_window_mean"    # IMPORTANT! Change rule name
+RULE_NAME = "burstguard_window_mean"    # IMPORTANT! Change rule name (to anything you want)
 CUDA_VISIBLE_DEVICES = "6"
 
 
