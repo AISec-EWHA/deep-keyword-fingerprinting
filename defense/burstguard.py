@@ -85,57 +85,6 @@ def burstguard(trace):
     return simulated
 
 
-# IMPORTANT! Added your own rule
-def burstguard_window_mean(trace):
-    simulated = []
-    state = NONE
-    
-    # Create an instance of Histogram
-    histo = Histogram()
-
-    iat_buffer = [] # ADD
-
-    for index, packet in enumerate(trace):
-        simulated.append(packet)
-
-
-        # ADDstart: iat buffer & window mean
-        if index > 0:
-            prev_packet = trace[index - 1]
-            curr_packet = trace[index]
-            if curr_packet.direction == prev_packet.direction:
-                iat_buffer.append(curr_packet.timestamp - prev_packet.timestamp)
-        
-        if len(iat_buffer) == 5:
-            avg_iat = sum(iat_buffer) / len(iat_buffer)
-            histo.update_iat_window_distribution(avg_iat)
-            iat_buffer.clear()
-        # ADDend
-
-
-        if index >= 1 and state == NONE and trace[index].direction == 1 and trace[index - 1].direction == 1:
-            # Create dummy packets using the sampled iat
-            num_dummy_packets = random.randint(1, 8)
-            former_timestamp = packet.timestamp
-            for _ in range(num_dummy_packets):
-                dummmy_timestamp = former_timestamp + histo.random_iat_from_distribution(percentile=20)
-                dummy_packet = ps.Packet( 
-                    timestamp=dummmy_timestamp,
-                    direction=-packet.direction,
-                    length=PADDING_LENGTH_OUR,  # Set PADDING_LENGTH if needed
-                    dummy=True
-                )
-                insort_left(simulated, dummy_packet)
-                former_timestamp = dummmy_timestamp
-            state = BURST
-
-        if state == BURST and trace[index].direction == -trace[index - 1].direction:
-            state = NONE
-    
-    simulated.sort(key=lambda x: x.timestamp)
-    return simulated
-
-
 def check_overheads(simulated, trace):
     bw_oh = bw.bandwidth_overhead(simulated, trace)
     bandwidths.append(bw_oh)
@@ -151,7 +100,7 @@ def file_read_write(input_file_path):
 
     trace = ps.parse(input_file_path)
 
-    simulated = burstguard_window_mean(trace) # IMPORTANT! Change rule to what you want to apply
+    simulated = burstguard(trace)
 
     check_overheads(simulated, trace)
     ps.dump(simulated, output_file_dir)
