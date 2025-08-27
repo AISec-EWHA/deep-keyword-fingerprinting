@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score     # CHANGE: new verion of library
+from sklearn.model_selection import cross_val_score
 from sklearn import metrics
 from sklearn import tree
 import sklearn.metrics as skm
@@ -50,7 +50,7 @@ logger = setup_logger(args.log_path)
 ############ Feeder functions ############
 def chunks(l, n):
     """ Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):       # CHANGE: xrange to range
+    for i in range(0, len(l), n):
         yield l[i:i+n]
 
 
@@ -62,7 +62,7 @@ def checkequal(lst):
 def mon_train_test_references(path_to_dict):
     """ Prepare monitored data in to training and test sets. """
 
-    fileObject1 = open(path_to_dict, 'rb')      # CHANGE: 'r' to 'rb'
+    fileObject1 = open(path_to_dict, 'rb')
     dic = dill.load(fileObject1)
 
     split_data = list(chunks(dic['alexa_feature'], alexa_instances))
@@ -74,7 +74,7 @@ def mon_train_test_references(path_to_dict):
     test_label = []
 
     for i in range(len(split_data)):
-        temp = list(zip(split_data[i], split_target[i]))        # CHANGE: convert zip to list
+        temp = list(zip(split_data[i], split_target[i]))
         random.shuffle(temp)
         data, label = zip(*temp)
         training_data.extend(data[:mon_train_inst])
@@ -111,7 +111,7 @@ def RF_closedworld(defense_rule_name, model_result, path_to_dict, n_jobs = n_job
 
     logger.info("Running k-FP model...")
 
-    model = RandomForestClassifier(n_jobs=n_jobs, n_estimators=num_Trees, oob_score=True, verbose=1)    # CHANGE: added verbose
+    model = RandomForestClassifier(n_jobs=n_jobs, n_estimators=num_Trees, oob_score=True, verbose=1)
     model.fit(tr_data, tr_label)
     
     logger.info(f"RF accuracy = {model.score(te_data, te_label):.4f}")
