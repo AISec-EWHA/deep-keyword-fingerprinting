@@ -373,32 +373,6 @@ def mon_dict(path_to_dict, path_to_alexa, alexa_sites, alexa_instances):
     fileObject.close()
 
 
-"""
-def mon_dict(path_to_dict, path_to_alexa, alexa_sites, alexa_instances):
-    '''Extract Features -- A dictionary containing features for each traffic instance.'''
-    data_dict = {'alexa_feature': [],
-                 'alexa_label': []
-                 }
-                 
-    logger.info("Creating mon features...")
-
-    # CHANGE: changed the format into defense dataset format
-    for i in tqdm(range(alexa_sites)):
-        files = glob.glob(os.path.join(path_to_alexa, f"{i}_*.txt"))
-        for j, file_path in enumerate(files):
-            tcp_dump = open(file_path).readlines()
-            g = []
-            g.append(TOTAL_FEATURES(tcp_dump))
-            data_dict['alexa_feature'].append(g)
-            data_dict['alexa_label'].append((i, j))
-
-    assert len(data_dict['alexa_feature']) == len(data_dict['alexa_label'])
-    fileObject = open(path_to_dict, 'wb')
-    dill.dump(data_dict, fileObject)
-    fileObject.close()
-"""
-
-
 if __name__ == '__main__':
     mon_dict(path_to_dict=path_to_dict, path_to_alexa=path_to_alexa, 
                 alexa_sites=alexa_sites, alexa_instances=alexa_instances)
