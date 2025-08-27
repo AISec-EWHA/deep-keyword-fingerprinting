@@ -10,7 +10,7 @@ from logger_config import setup_logger
 ################ Only change here ################
 MODEL_NAME = "kfp"          # IMPORTANT! pick one of: dkf, kfp, tiktok
 RULE_NAME = "burstguard_window_mean"    # IMPORTANT! Change rule name (to anything you want)
-CUDA_VISIBLE_DEVICES = "6"
+CUDA_VISIBLE_DEVICES = "0"
 
 
 ######### Don't have to change from here #########
@@ -18,14 +18,14 @@ TIMESTAMP = strftime('%m%d_%H%M')
 DEFENSE_RULE_NAME = f"{RULE_NAME}_{TIMESTAMP}"
 
 # input (origianl traffic) output (defended traffic) 
-INPUT_FOLDER_ROOT = "/scratch3/KF/duckduckgo/new_processed_to_txt_273_1000_unmerged"
-OUTPUT_FOLDER_ROOT = "/scratch2/DKF/BurstGuard/defended"
+INPUT_FOLDER_ROOT = "path/to/dataset"
+OUTPUT_FOLDER_ROOT = "path/to/output"
 
 # input (defended traffic) output (feature pkl file)
-FEATURE_INPUT_FOLDER_ROOT = f"/scratch2/DKF/BurstGuard/defended/{DEFENSE_RULE_NAME}"
-X_FEATURE_PATH = f"/scratch2/DKF/BurstGuard/feature/ddg_defense_{MODEL_NAME}_{DEFENSE_RULE_NAME}_x.pkl"
-Y_FEATURE_PATH = f"/scratch2/DKF/BurstGuard/feature/ddg_defense_{MODEL_NAME}_{DEFENSE_RULE_NAME}_y.pkl"
-PKL_FEATURE_PATH = f"/scratch2/DKF/BurstGuard/feature/ddg_defense_{MODEL_NAME}_{DEFENSE_RULE_NAME}.pkl"
+FEATURE_INPUT_FOLDER_ROOT = f"path/to/output/{DEFENSE_RULE_NAME}"
+X_FEATURE_PATH = f"path/to/ddg_defense_{MODEL_NAME}_{DEFENSE_RULE_NAME}_x.pkl"
+Y_FEATURE_PATH = f"path/to/ddg_defense_{MODEL_NAME}_{DEFENSE_RULE_NAME}_y.pkl"
+PKL_FEATURE_PATH = f"path/to/ddg_defense_{MODEL_NAME}_{DEFENSE_RULE_NAME}.pkl"
 
 # model result
 CURRENT_DIR = os.path.dirname(__file__)
