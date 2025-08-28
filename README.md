@@ -32,12 +32,12 @@ natsort==8.4.0
 
 ## 3. Dataset
 
-For the datasets, you can use the download link below:
+For the datasets, you can use the download link below. Note that the dataset is in .txt files, in Wang and Goldberg format.
 
-| Dataset | Link |
-|-----|-----|
-| Bing_2023 | [Link](https://drive.google.com/file/d/1jdk2rk9Wf8pkDa3JGj5JjXl6XQOqZWKl/view?usp=share_link) |
-| DuckDuckGo_2023 | [Link](https://drive.google.com/file/d/12V6y-Ybr5Owht6uEo6rzqekOBziEeswo/view?usp=sharing) |
+| Dataset | Link | Size |
+|-----|-----|-----|
+| Bing_2023 | [Link](https://drive.google.com/file/d/1jdk2rk9Wf8pkDa3JGj5JjXl6XQOqZWKl/view?usp=share_link) | 258 classes * 1,000 instances |
+| DuckDuckGo_2023 | [Link](https://drive.google.com/file/d/12V6y-Ybr5Owht6uEo6rzqekOBziEeswo/view?usp=sharing) | 273 classes * 1,000 instances |
 
 
 ## 3. Run DKF and BurstGuard
